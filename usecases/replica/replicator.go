@@ -126,13 +126,13 @@ func (r *Replicator) PutObject(ctx context.Context,
 	if err != nil {
 		r.log.WithField("op", "push.one").WithField("class", r.class).
 			WithField("shard", shard).Error(err)
-		return replicaerrors.NewReplicasErrorWithLevel(l, err)
+		return replicaerrors.NewReplicasError(err, l)
 	}
 	err = r.stream.readErrors(1, level, replyCh)[0]
 	if err != nil {
 		r.log.WithField("op", "put").WithField("class", r.class).
 			WithField("shard", shard).WithField("uuid", obj.ID()).Error(err)
-		err = replicaerrors.NewReplicasErrorWithLevel(l, err)
+		err = replicaerrors.NewReplicasError(err, l)
 	}
 	return err
 }
@@ -158,7 +158,7 @@ func (r *Replicator) MergeObject(ctx context.Context,
 	if err != nil {
 		r.log.WithField("op", "push.merge").WithField("class", r.class).
 			WithField("shard", shard).Error(err)
-		return replicaerrors.NewReplicasErrorWithLevel(l, err)
+		return replicaerrors.NewReplicasError(err, l)
 	}
 	err = r.stream.readErrors(1, level, replyCh)[0]
 	if err != nil {
@@ -194,7 +194,7 @@ func (r *Replicator) DeleteObject(ctx context.Context,
 	if err != nil {
 		r.log.WithField("op", "push.delete").WithField("class", r.class).
 			WithField("shard", shard).Error(err)
-		return replicaerrors.NewReplicasErrorWithLevel(l, err)
+		return replicaerrors.NewReplicasError(err, l)
 	}
 	err = r.stream.readErrors(1, level, replyCh)[0]
 	if err != nil {
@@ -226,7 +226,7 @@ func (r *Replicator) PutObjects(ctx context.Context,
 	if err != nil {
 		r.log.WithField("op", "push.many").WithField("class", r.class).
 			WithField("shard", shard).Error(err)
-		err = replicaerrors.NewReplicasErrorWithLevel(l, err)
+		err = replicaerrors.NewReplicasError(err, l)
 		errs := make([]error, len(objs))
 		for i := 0; i < len(objs); i++ {
 			errs[i] = err
@@ -276,7 +276,7 @@ func (r *Replicator) DeleteObjects(ctx context.Context,
 	if err != nil {
 		r.log.WithField("op", "push.deletes").WithField("class", r.class).
 			WithField("shard", shard).Error(err)
-		err = replicaerrors.NewReplicasErrorWithLevel(l, err)
+		err = replicaerrors.NewReplicasError(err, l)
 		errs := make([]objects.BatchSimpleObject, len(uuids))
 		for i := 0; i < len(uuids); i++ {
 			errs[i].Err = err
@@ -312,7 +312,7 @@ func (r *Replicator) AddReferences(ctx context.Context,
 	if err != nil {
 		r.log.WithField("op", "push.refs").WithField("class", r.class).
 			WithField("shard", shard).Error(err)
-		err = replicaerrors.NewReplicasErrorWithLevel(l, err)
+		err = replicaerrors.NewReplicasError(err, l)
 		errs := make([]error, len(refs))
 		for i := 0; i < len(refs); i++ {
 			errs[i] = err

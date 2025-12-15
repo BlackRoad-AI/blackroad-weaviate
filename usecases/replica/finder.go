@@ -124,11 +124,11 @@ func (f *Finder) GetOne(ctx context.Context,
 	replyCh, level, err := c.Pull(ctx, l, op, "", 20*time.Second)
 	if err != nil {
 		f.log.WithField("op", "pull.one").Error(err)
-		return nil, replicaerrors.NewReplicasErrorWithLevel(l, err)
+		// failure to reach enough replicas at the coordinator level
+		return nil, replicaerrors.NewReplicasError(err, l)
 	}
 	result := <-f.readOne(ctx, shard, id, replyCh, level)
 	if err = result.Err; err != nil {
-		err = replicaerrors.NewReplicasErrorWithLevel(l, err)
 		if strings.Contains(err.Error(), ErrConflictExistOrDeleted.Error()) {
 			err = objects.NewErrDirtyReadOfDeletedObject(err)
 		}
@@ -149,7 +149,7 @@ func (f *Finder) FindUUIDs(ctx context.Context,
 	replyCh, _, err := c.Pull(ctx, l, op, "", 30*time.Second)
 	if err != nil {
 		f.log.WithField("op", "pull.one").Error(err)
-		return nil, replicaerrors.NewReplicasErrorWithLevel(l, err)
+		return nil, replicaerrors.NewReplicasError(err, l)
 	}
 
 	res := make(map[strfmt.UUID]struct{})
@@ -238,11 +238,13 @@ func (f *Finder) Exists(ctx context.Context,
 	replyCh, state, err := c.Pull(ctx, l, op, "", 20*time.Second)
 	if err != nil {
 		f.log.WithField("op", "pull.exist").Error(err)
-		return false, replicaerrors.NewReplicasErrorWithLevel(l, err)
+		// failure to reach enough replicas at the coordinator level
+		return false, replicaerrors.NewReplicasError(err, l)
 	}
 	result := <-f.readExistence(ctx, shard, id, replyCh, state)
 	if err = result.Err; err != nil {
-		err = replicaerrors.NewReplicasErrorWithLevel(l, err)
+		// preserve underlying classification from the stream
+		// (read/repair vs generic replicas errors)
 		if strings.Contains(err.Error(), ErrConflictExistOrDeleted.Error()) {
 			err = objects.NewErrDirtyReadOfDeletedObject(err)
 		}
@@ -289,7 +291,7 @@ func (f *Finder) checkShardConsistency(ctx context.Context,
 
 	replyCh, state, err := c.Pull(ctx, l, op, batch.Node, 20*time.Second)
 	if err != nil {
-		return nil, replicaerrors.NewReplicasErrorWithLevel(l, err)
+		return nil, replicaerrors.NewReplicasError(err, l)
 	}
 	result := <-f.readBatchPart(ctx, batch, ids, replyCh, state)
 	return result.Value, result.Err
