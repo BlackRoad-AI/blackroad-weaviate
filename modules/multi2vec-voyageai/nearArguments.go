@@ -12,6 +12,8 @@
 package modclip
 
 import (
+	"maps"
+
 	"github.com/weaviate/weaviate/entities/modulecapabilities"
 	"github.com/weaviate/weaviate/usecases/modulecomponents/arguments/nearImage"
 	"github.com/weaviate/weaviate/usecases/modulecomponents/arguments/nearText"
@@ -38,29 +40,17 @@ func (m *Module) initNearVideo() error {
 
 func (m *Module) Arguments() map[string]modulecapabilities.GraphQLArgument {
 	arguments := map[string]modulecapabilities.GraphQLArgument{}
-	for name, arg := range m.nearImageGraphqlProvider.Arguments() {
-		arguments[name] = arg
-	}
-	for name, arg := range m.nearTextGraphqlProvider.Arguments() {
-		arguments[name] = arg
-	}
-	for name, arg := range m.nearVideoGraphqlProvider.Arguments() {
-		arguments[name] = arg
-	}
+	maps.Copy(arguments, m.nearTextGraphqlProvider.Arguments())
+	maps.Copy(arguments, m.nearImageGraphqlProvider.Arguments())
+	maps.Copy(arguments, m.nearVideoGraphqlProvider.Arguments())
 	return arguments
 }
 
 func (m *Module) VectorSearches() map[string]modulecapabilities.VectorForParams[[]float32] {
 	vectorSearches := map[string]modulecapabilities.VectorForParams[[]float32]{}
-	for name, arg := range m.nearImageSearcher.VectorSearches() {
-		vectorSearches[name] = arg
-	}
-	for name, arg := range m.nearTextSearcher.VectorSearches() {
-		vectorSearches[name] = arg
-	}
-	for name, arg := range m.nearVideoSearcher.VectorSearches() {
-		vectorSearches[name] = arg
-	}
+	maps.Copy(vectorSearches, m.nearTextSearcher.VectorSearches())
+	maps.Copy(vectorSearches, m.nearImageSearcher.VectorSearches())
+	maps.Copy(vectorSearches, m.nearVideoSearcher.VectorSearches())
 	return vectorSearches
 }
 
