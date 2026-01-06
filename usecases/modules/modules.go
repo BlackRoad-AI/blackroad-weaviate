@@ -1150,6 +1150,9 @@ func (p *Provider) UsageEnabled() bool {
 	return false
 }
 
+// There might be module settings that need to be migrated to new names, for example
+// if baseUrl property setting was renamed to baseURL then we need to adjust module settings
+// and migrate baseUrl to baseURL
 func (p *Provider) MigrateVectorizerSettings(oldVectorizerConfig, newVectorizerConfig any) bool {
 	oldVectorizerCfg, oldVectorizerCfgOk := oldVectorizerConfig.(map[string]any)
 	newVectorizerCfg, newVectorizerCfgOk := newVectorizerConfig.(map[string]any)
